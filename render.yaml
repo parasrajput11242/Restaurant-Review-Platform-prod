@@ -13,9 +13,9 @@ services:
       - key: ELASTICSEARCH_URIS
         sync: false        # e.g. https://user:password@your-cluster.example.com:443
       - key: KEYCLOAK_ISSUER_URI
-        value: https://YOUR-KEYCLOAK.onrender.com/realms/restaurant-review
+        value: https://restaurant-keycloak.onrender.com/realms/restaurant-review
       - key: KEYCLOAK_URL
-        value: https://YOUR-KEYCLOAK.onrender.com
+        value: https://restaurant-keycloak.onrender.com
       - key: KEYCLOAK_ADMIN_CLIENT_SECRET
         sync: false
       - key: GEOCODING_USER_AGENT
@@ -30,7 +30,7 @@ services:
     healthCheckPath: /realms/restaurant-review
     envVars:
       - key: KC_HOSTNAME
-        value: https://YOUR-KEYCLOAK.onrender.com
+        value: https://restaurant-keycloak.onrender.com
       - key: KC_BOOTSTRAP_ADMIN_USERNAME
         value: keycloak-admin
       - key: KC_BOOTSTRAP_ADMIN_PASSWORD
@@ -48,7 +48,7 @@ services:
       - key: KEYCLOAK_ADMIN_CLIENT_SECRET
         sync: false        # same value as the backend's
       - key: FRONTEND_URL
-        value: https://YOUR-SITE.netlify.app
+        value: https://restaurant-review-prod.netlify.app
       - key: INITIAL_ADMIN_PASSWORD
         sync: false
 
