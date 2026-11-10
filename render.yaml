@@ -1,0 +1,57 @@
+# Render Blueprint: backend API, Keycloak and its database.
+# Elasticsearch is NOT on Render: create it elsewhere and set ELASTICSEARCH_URIS (see DEPLOY.md).
+# Replace every YOUR-... placeholder, then in Render: New > Blueprint > pick this repo.
+services:
+  - type: web
+    name: restaurant-api
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: starter          # "free" works but sleeps after 15 min and loses uploaded photos
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: ELASTICSEARCH_URIS
+        sync: false        # e.g. https://user:password@your-cluster.example.com:443
+      - key: KEYCLOAK_ISSUER_URI
+        value: https://YOUR-KEYCLOAK.onrender.com/realms/restaurant-review
+      - key: KEYCLOAK_URL
+        value: https://YOUR-KEYCLOAK.onrender.com
+      - key: KEYCLOAK_ADMIN_CLIENT_SECRET
+        sync: false
+      - key: GEOCODING_USER_AGENT
+        sync: false
+
+  - type: web
+    name: restaurant-keycloak
+    runtime: docker
+    dockerfilePath: ./keycloak/Dockerfile
+    dockerContext: ./keycloak
+    plan: standard         # Keycloak needs well over 512 MB of RAM
+    healthCheckPath: /realms/restaurant-review
+    envVars:
+      - key: KC_HOSTNAME
+        value: https://YOUR-KEYCLOAK.onrender.com
+      - key: KC_BOOTSTRAP_ADMIN_USERNAME
+        value: keycloak-admin
+      - key: KC_BOOTSTRAP_ADMIN_PASSWORD
+        sync: false
+      - key: KC_DB_URL_HOST
+        fromDatabase: { name: keycloak-db, property: host }
+      - key: KC_DB_URL_PORT
+        fromDatabase: { name: keycloak-db, property: port }
+      - key: KC_DB_URL_DATABASE
+        fromDatabase: { name: keycloak-db, property: database }
+      - key: KC_DB_USERNAME
+        fromDatabase: { name: keycloak-db, property: user }
+      - key: KC_DB_PASSWORD
+        fromDatabase: { name: keycloak-db, property: password }
+      - key: KEYCLOAK_ADMIN_CLIENT_SECRET
+        sync: false        # same value as the backend's
+      - key: FRONTEND_URL
+        value: https://YOUR-SITE.netlify.app
+      - key: INITIAL_ADMIN_PASSWORD
+        sync: false
+
+databases:
+  - name: keycloak-db
+    plan: basic-256mb

@@ -1,0 +1,11 @@
+# Netlify build settings. In Netlify set "Base directory" to: frontend
+[build]
+  command = "npm run build"
+
+# The browser calls /api/... on the Netlify site; Netlify forwards it to the Render backend.
+# EDIT the URL below to your Render backend address (no trailing slash).
+[[redirects]]
+  from = "/api/*"
+  to = "https://YOUR-BACKEND.onrender.com/api/:splat"
+  status = 200
+  force = true
