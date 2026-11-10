@@ -1,0 +1,49 @@
+# Local development: only the infrastructure. Run the backend and frontend yourself:
+#   docker compose up -d
+#   cd backend  && mvn spring-boot:run
+#   cd frontend && npm install && npm run dev
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:9.2.2
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    ports:
+      - "9200:9200"
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fs http://localhost:9200/_cluster/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:9.2.2
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.7.2
+    command: ["start-dev", "--import-realm"]
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+      KEYCLOAK_ADMIN_CLIENT_SECRET: change-me-dev-secret
+      FRONTEND_URL: http://localhost:3000
+      INITIAL_ADMIN_PASSWORD: admin
+    ports:
+      - "9090:8080"
+    volumes:
+      - ./keycloak/restaurant-review-realm.json:/opt/keycloak/data/import/restaurant-review-realm.json:ro
+      - keycloak-data:/opt/keycloak/data
+
+volumes:
+  es-data:
+  keycloak-data:
